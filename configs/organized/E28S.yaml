@@ -1,0 +1,54 @@
+sample: E28S
+outdir: /ix1/ylee/shared/organized_experiments/simpleleaf_runs/E28S
+
+paths:
+  conda_bin: /ix1/ylee/kor11/tools/af_tutorial/conda_env/bin
+  alevin_fry_home: /ix1/ylee/kor11/tools/af_tutorial/E28S_simpleaf/af_home
+
+indices:
+  gex: /ix1/ylee/kor11/tools/af_tutorial/E14S_simpleaf/mouse-2024-A_splici/index
+  adt: /ix1/ylee/kor11/tools/af_tutorial/E28S_simpleaf/adt_feature_index_quant/index
+
+fastq:
+  gex:
+    r1: /ix1/ylee/shared/ResequencedE15S_E27_E28S/Y.Lee_10x_07_13_2026_fastq/E28S_GEX_S3_R1_001.fastq.gz
+    r2: /ix1/ylee/shared/ResequencedE15S_E27_E28S/Y.Lee_10x_07_13_2026_fastq/E28S_GEX_S3_R2_001.fastq.gz
+  adt:
+    r1: /ix1/ylee/shared/ResequencedE15S_E27_E28S/Y.Lee_10x_07_13_2026_fastq/E28S_ADT_S4_R1_001.fastq.gz
+    r2: /ix1/ylee/shared/ResequencedE15S_E27_E28S/Y.Lee_10x_07_13_2026_fastq/E28S_ADT_S4_R2_001.fastq.gz
+
+feature_ref: /ix1/ylee/kor11/tools/af_tutorial/E28S_simpleaf/new_feature_ref_quant.csv
+
+chemistry:
+  gex: 10xv4-3p
+  adt: e14s-adt-10xv4
+
+quant:
+  threads: 64
+  min_reads: 10
+  resolution: cr-like
+  min_gex_umi: 100
+
+ocm:
+  enabled: true
+  min_gex_umi: 500
+  overhang_start: 7
+  overhang_len: 2
+  cellranger_per_sample_outs: /ix1/ylee/kor11/tools/af_tutorial/E28S_cellranger/E28S_ocm/outs/per_sample_outs
+  sample_map:
+    - overhang: GT
+      ocm_id: OB1
+      sample_id: edge_gfp_plus
+      description: Edge GFP+ hypoxia A223
+    - overhang: CA
+      ocm_id: OB2
+      sample_id: edge_gfp_minus
+      description: Edge GFP- hypoxia A223
+    - overhang: TC
+      ocm_id: OB3
+      sample_id: core_gfp_plus
+      description: Core GFP+ hypoxia A223
+    - overhang: AG
+      ocm_id: OB4
+      sample_id: core_gfp_minus
+      description: Core GFP- hypoxia A223

@@ -1,0 +1,26 @@
+sample: E1P
+outdir: /ix1/ylee/shared/organized_experiments/simpleleaf_runs/E1P
+
+paths:
+  conda_bin: /ix1/ylee/kor11/tools/af_tutorial/conda_env/bin
+  alevin_fry_home: /ix1/ylee/kor11/tools/af_tutorial/E28S_simpleaf/af_home
+
+indices:
+  gex: /ix1/ylee/kor11/tools/af_tutorial/E14S_simpleaf/mouse-2024-A_splici/index
+
+fastq:
+  gex:
+    r1: /ix1/ylee/shared/E1_E2_GEX/01.RawData/E1P_GEX/E1P_GEX-SI_TT_C6_235753LT4_S1_L002_R1_001.fastq.gz
+    r2: /ix1/ylee/shared/E1_E2_GEX/01.RawData/E1P_GEX/E1P_GEX-SI_TT_C6_235753LT4_S1_L002_R2_001.fastq.gz
+
+chemistry:
+  gex: 10xv3
+
+quant:
+  threads: 64
+  min_reads: 10
+  resolution: cr-like
+  min_gex_umi: 100
+
+ocm:
+  enabled: false

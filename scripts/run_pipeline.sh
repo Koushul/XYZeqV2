@@ -117,14 +117,43 @@ if [[ "$SKIP_QUANT" -eq 0 ]]; then
   rm -rf "$SCRATCH/stage/gex_index"
   mkdir -p "$SCRATCH/stage/gex_index"
   cp -a "$GEX_INDEX"/. "$SCRATCH/stage/gex_index/"
-  ln -sfn "$GEX_R1" "$SCRATCH/stage/fastq/gex_R1.fastq.gz"
-  ln -sfn "$GEX_R2" "$SCRATCH/stage/fastq/gex_R2.fastq.gz"
+
+  # Stage FASTQs as scratch symlinks. Always symlink each file so paths with
+  # commas (e.g. "Lee, Youjin") are not misparsed as multi-FASTQ lists by piscem.
+  stage_reads() {
+    local src="$1" name="$2"
+    local -a parts=()
+    local -a staged=()
+    local i=0 p link
+    IFS=',' read -r -a parts <<< "$src"
+    # If a single path contains commas (directory name), parts length >1 but
+    # intermediate pieces won't exist as files — detect and treat as one path.
+    if [[ ${#parts[@]} -gt 1 ]]; then
+      local all_exist=1
+      for p in "${parts[@]}"; do
+        [[ -e "$p" ]] || { all_exist=0; break; }
+      done
+      if [[ "$all_exist" -eq 0 ]]; then
+        parts=("$src")
+      fi
+    fi
+    for p in "${parts[@]}"; do
+      link="$SCRATCH/stage/fastq/${name}_${i}.fastq.gz"
+      ln -sfn "$p" "$link"
+      staged+=("$link")
+      i=$((i + 1))
+    done
+    local IFS=','
+    echo "${staged[*]}"
+  }
+  GEX_R1_ARG="$(stage_reads "$GEX_R1" gex_R1)"
+  GEX_R2_ARG="$(stage_reads "$GEX_R2" gex_R2)"
 
   run_gex() {
     rm -rf "$SCRATCH/gex_quant"
     simpleaf quant \
-      --reads1 "$SCRATCH/stage/fastq/gex_R1.fastq.gz" \
-      --reads2 "$SCRATCH/stage/fastq/gex_R2.fastq.gz" \
+      --reads1 "$GEX_R1_ARG" \
+      --reads2 "$GEX_R2_ARG" \
       --threads "$THREADS_GEX" \
       --index "$SCRATCH/stage/gex_index" \
       --chemistry "$GEX_CHEM" \
@@ -140,14 +169,14 @@ if [[ "$SKIP_QUANT" -eq 0 ]]; then
     rm -rf "$SCRATCH/stage/adt_index"
     mkdir -p "$SCRATCH/stage/adt_index"
     cp -a "$ADT_INDEX"/. "$SCRATCH/stage/adt_index/"
-    ln -sfn "$ADT_R1" "$SCRATCH/stage/fastq/adt_R1.fastq.gz"
-    ln -sfn "$ADT_R2" "$SCRATCH/stage/fastq/adt_R2.fastq.gz"
+    ADT_R1_ARG="$(stage_reads "$ADT_R1" adt_R1)"
+    ADT_R2_ARG="$(stage_reads "$ADT_R2" adt_R2)"
 
     run_adt() {
       rm -rf "$SCRATCH/adt_quant"
       simpleaf quant \
-        --reads1 "$SCRATCH/stage/fastq/adt_R1.fastq.gz" \
-        --reads2 "$SCRATCH/stage/fastq/adt_R2.fastq.gz" \
+        --reads1 "$ADT_R1_ARG" \
+        --reads2 "$ADT_R2_ARG" \
         --threads "$THREADS_ADT" \
         --index "$SCRATCH/stage/adt_index" \
         --chemistry "$ADT_CHEM" \
@@ -160,7 +189,16 @@ if [[ "$SKIP_QUANT" -eq 0 ]]; then
 
     run_gex & PID_GEX=$!
     run_adt & PID_ADT=$!
-    wait $PID_GEX && wait $PID_ADT
+    RC_GEX=0
+    RC_ADT=0
+    wait $PID_GEX || RC_GEX=$?
+    wait $PID_ADT || RC_ADT=$?
+    if [[ "$RC_GEX" -ne 0 || "$RC_ADT" -ne 0 ]]; then
+      echo "quant failed gex_rc=$RC_GEX adt_rc=$RC_ADT" >&2
+      tail -50 "$OUTDIR/logs/quant_gex.log" >&2 || true
+      tail -50 "$OUTDIR/logs/quant_adt.log" >&2 || true
+      exit 1
+    fi
     rm -rf "$OUTDIR/gex_quant" "$OUTDIR/adt_quant"
     cp -a "$SCRATCH/gex_quant" "$OUTDIR/gex_quant"
     cp -a "$SCRATCH/adt_quant" "$OUTDIR/adt_quant"
