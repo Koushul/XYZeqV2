@@ -29,14 +29,32 @@ Demux existing quants only:
 scripts/run_pipeline.sh --config configs/examples/E28S_ocm.yaml --skip-quant
 ```
 
+## Batch: organized_experiments (SMP)
+
+Generate configs and submit one job per GEX library (64 cores, 400G, `smp-smp-n`):
+
+```bash
+python3 scripts/generate_organized_configs.py
+scripts/submit_organized_smp.sh
+```
+
+Outputs land in `/ix1/ylee/shared/organized_experiments/simpleleaf_runs/<SAMPLE>/`.
+GEX uses the mouse-2024-A **splici** index (`spliced` / `unspliced` / `ambiguous` layers in h5ad).
+Paired ADT is merged into `.obsm["ADT"]` when FASTQs are present (E30↔E30S, E31S↔E318S).
+OCM demux is enabled for E27 and E28S.
+
 ## Layout
 
 | Path | Role |
 |------|------|
 | `simpleleaf/` | Python package (`demux`, `merge`, `compare`, …) |
 | `scripts/run_pipeline.sh` | Quant ± OCM / merge driver |
+| `scripts/sbatch_pipeline.sh` | Slurm wrapper (SMP cluster) |
+| `scripts/generate_organized_configs.py` | Build YAMLs for organized_experiments |
+| `scripts/submit_organized_smp.sh` | Submit all organized configs |
 | `configs/template.yaml` | Blank sample config |
 | `configs/examples/` | E28S (OCM) + E14S (CITE) examples |
+| `configs/organized/` | Per-library configs for organized_experiments |
 | `workflow/` | simpleaf jsonnet template |
 | `.cursor/skills/simpleleaf/SKILL.md` | Agent skill |
 

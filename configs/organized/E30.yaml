@@ -1,0 +1,33 @@
+sample: E30
+outdir: /ix1/ylee/shared/organized_experiments/simpleleaf_runs/E30
+
+paths:
+  conda_bin: /ix1/ylee/kor11/tools/af_tutorial/conda_env/bin
+  alevin_fry_home: /ix1/ylee/kor11/tools/af_tutorial/E28S_simpleaf/af_home
+
+indices:
+  gex: /ix1/ylee/kor11/tools/af_tutorial/E14S_simpleaf/mouse-2024-A_splici/index
+  adt: /ix1/ylee/kor11/tools/af_tutorial/E28S_simpleaf/adt_feature_index_quant/index
+
+fastq:
+  gex:
+    r1: /ix1/ylee/shared/E1617293031/Y.Lee_10x_E1617293031_7_17_2026_fastq/E30_GEX_S5_R1_001.fastq.gz
+    r2: /ix1/ylee/shared/E1617293031/Y.Lee_10x_E1617293031_7_17_2026_fastq/E30_GEX_S5_R2_001.fastq.gz
+  adt:
+    r1: /ix1/ylee/shared/E1617293031/Y.Lee_10x_E1617293031_7_17_2026_fastq/E30S_ADT_S6_R1_001.fastq.gz
+    r2: /ix1/ylee/shared/E1617293031/Y.Lee_10x_E1617293031_7_17_2026_fastq/E30S_ADT_S6_R2_001.fastq.gz
+
+feature_ref: /ix1/ylee/kor11/tools/af_tutorial/E28S_simpleaf/new_feature_ref_quant.csv
+
+chemistry:
+  gex: 10xv4-3p
+  adt: e14s-adt-10xv4
+
+quant:
+  threads: 64
+  min_reads: 10
+  resolution: cr-like
+  min_gex_umi: 100
+
+ocm:
+  enabled: false

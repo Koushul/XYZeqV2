@@ -117,14 +117,25 @@ if [[ "$SKIP_QUANT" -eq 0 ]]; then
   rm -rf "$SCRATCH/stage/gex_index"
   mkdir -p "$SCRATCH/stage/gex_index"
   cp -a "$GEX_INDEX"/. "$SCRATCH/stage/gex_index/"
-  ln -sfn "$GEX_R1" "$SCRATCH/stage/fastq/gex_R1.fastq.gz"
-  ln -sfn "$GEX_R2" "$SCRATCH/stage/fastq/gex_R2.fastq.gz"
+
+  # Single FASTQ: stable scratch symlink. Comma-separated lists: pass through to simpleaf.
+  stage_reads() {
+    local src="$1" name="$2"
+    if [[ "$src" == *,* ]]; then
+      echo "$src"
+      return
+    fi
+    ln -sfn "$src" "$SCRATCH/stage/fastq/${name}.fastq.gz"
+    echo "$SCRATCH/stage/fastq/${name}.fastq.gz"
+  }
+  GEX_R1_ARG="$(stage_reads "$GEX_R1" gex_R1)"
+  GEX_R2_ARG="$(stage_reads "$GEX_R2" gex_R2)"
 
   run_gex() {
     rm -rf "$SCRATCH/gex_quant"
     simpleaf quant \
-      --reads1 "$SCRATCH/stage/fastq/gex_R1.fastq.gz" \
-      --reads2 "$SCRATCH/stage/fastq/gex_R2.fastq.gz" \
+      --reads1 "$GEX_R1_ARG" \
+      --reads2 "$GEX_R2_ARG" \
       --threads "$THREADS_GEX" \
       --index "$SCRATCH/stage/gex_index" \
       --chemistry "$GEX_CHEM" \
@@ -140,14 +151,14 @@ if [[ "$SKIP_QUANT" -eq 0 ]]; then
     rm -rf "$SCRATCH/stage/adt_index"
     mkdir -p "$SCRATCH/stage/adt_index"
     cp -a "$ADT_INDEX"/. "$SCRATCH/stage/adt_index/"
-    ln -sfn "$ADT_R1" "$SCRATCH/stage/fastq/adt_R1.fastq.gz"
-    ln -sfn "$ADT_R2" "$SCRATCH/stage/fastq/adt_R2.fastq.gz"
+    ADT_R1_ARG="$(stage_reads "$ADT_R1" adt_R1)"
+    ADT_R2_ARG="$(stage_reads "$ADT_R2" adt_R2)"
 
     run_adt() {
       rm -rf "$SCRATCH/adt_quant"
       simpleaf quant \
-        --reads1 "$SCRATCH/stage/fastq/adt_R1.fastq.gz" \
-        --reads2 "$SCRATCH/stage/fastq/adt_R2.fastq.gz" \
+        --reads1 "$ADT_R1_ARG" \
+        --reads2 "$ADT_R2_ARG" \
         --threads "$THREADS_ADT" \
         --index "$SCRATCH/stage/adt_index" \
         --chemistry "$ADT_CHEM" \

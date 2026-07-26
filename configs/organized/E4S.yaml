@@ -1,0 +1,33 @@
+sample: E4S
+outdir: /ix1/ylee/shared/organized_experiments/simpleleaf_runs/E4S
+
+paths:
+  conda_bin: /ix1/ylee/kor11/tools/af_tutorial/conda_env/bin
+  alevin_fry_home: /ix1/ylee/kor11/tools/af_tutorial/E28S_simpleaf/af_home
+
+indices:
+  gex: /ix1/ylee/kor11/tools/af_tutorial/E14S_simpleaf/mouse-2024-A_splici/index
+  adt: /ix1/ylee/kor11/tools/af_tutorial/E28S_simpleaf/adt_feature_index_quant/index
+
+fastq:
+  gex:
+    r1: /ix1/ylee/shared/E4S_original/GEX/01.RawData/E4S_GEX/E4S_GEX_S11_L001_R1_001.fastq.gz,/ix1/ylee/shared/E4S_original/GEX/01.RawData/E4S_GEX/E4S_GEX_S3_L001_R1_001.fastq.gz
+    r2: /ix1/ylee/shared/E4S_original/GEX/01.RawData/E4S_GEX/E4S_GEX_S11_L001_R2_001.fastq.gz,/ix1/ylee/shared/E4S_original/GEX/01.RawData/E4S_GEX/E4S_GEX_S3_L001_R2_001.fastq.gz
+  adt:
+    r1: /ix1/ylee/shared/E4S_original/ADT/01.RawData/E4S_ADT/E4S_ADT_S1_L001_R1_001.fastq.gz
+    r2: /ix1/ylee/shared/E4S_original/ADT/01.RawData/E4S_ADT/E4S_ADT_S1_L001_R2_001.fastq.gz
+
+feature_ref: /ix1/ylee/kor11/tools/af_tutorial/E28S_simpleaf/new_feature_ref_quant.csv
+
+chemistry:
+  gex: 10xv3
+  adt: e14s-adt-10xv3
+
+quant:
+  threads: 64
+  min_reads: 10
+  resolution: cr-like
+  min_gex_umi: 100
+
+ocm:
+  enabled: false
