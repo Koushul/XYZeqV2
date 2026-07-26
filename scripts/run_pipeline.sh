@@ -19,7 +19,11 @@ EOF
 }
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+# Prefer pinned install root (sbatch snapshots this script to scratch).
+ROOT="${SIMPLELEAF_ROOT:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+if [[ ! -d "$ROOT/simpleleaf" && -d /ix1/ylee/kor11/tools/XYZeqV2/simpleleaf ]]; then
+  ROOT=/ix1/ylee/kor11/tools/XYZeqV2
+fi
 export PYTHONPATH="${ROOT}${PYTHONPATH:+:$PYTHONPATH}"
 export PYTHONNOUSERSITE=1
 
@@ -211,6 +215,14 @@ if [[ "$SKIP_QUANT" -eq 0 ]]; then
     GEX_H5AD="$OUTDIR/gex_quant/af_quant/alevin/quants.h5ad"
     ADT_H5AD=""
   fi
+fi
+
+# Prefer freshly produced quants; else reuse outdir products (resume / --skip-quant).
+if [[ -z "${GEX_H5AD:-}" && -f "$OUTDIR/gex_quant/af_quant/alevin/quants.h5ad" ]]; then
+  GEX_H5AD="$OUTDIR/gex_quant/af_quant/alevin/quants.h5ad"
+fi
+if [[ -z "${ADT_H5AD:-}" && -f "$OUTDIR/adt_quant/af_quant/alevin/quants.h5ad" ]]; then
+  ADT_H5AD="$OUTDIR/adt_quant/af_quant/alevin/quants.h5ad"
 fi
 
 if [[ "$MERGE_ONLY" -eq 1 || "$OCM_ENABLED" != "1" ]]; then

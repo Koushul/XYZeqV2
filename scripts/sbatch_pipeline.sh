@@ -9,10 +9,10 @@
 # Prefer submit_organized_smp.sh / submit_organized_htc.sh which set -M/-p/-q.
 # Usage:
 #   sbatch -M htc -p htc -q htc-htc-n scripts/sbatch_pipeline.sh configs/organized/E14S.yaml
-# Optional env overrides: THREADS, OUTDIR, SCRATCH, SKIP_QUANT=1
+# Optional env overrides: THREADS, OUTDIR, SCRATCH, SKIP_QUANT=1, MERGE_ONLY=1
 
 set -euo pipefail
-# BASH_SOURCE is unreliable under Slurm (script is copied to spool); pin install root.
+# Pin install root — BASH_SOURCE is unreliable under Slurm spool copies.
 ROOT="/ix1/ylee/kor11/tools/XYZeqV2"
 CONFIG="${1:?config yaml required}"
 [[ "$CONFIG" = /* ]] || CONFIG="$ROOT/$CONFIG"
@@ -20,6 +20,7 @@ EXTRA=()
 [[ -n "${THREADS:-}" ]] && EXTRA+=(--threads "$THREADS")
 [[ -n "${OUTDIR:-}" ]] && EXTRA+=(--outdir "$OUTDIR")
 [[ "${SKIP_QUANT:-0}" == "1" ]] && EXTRA+=(--skip-quant)
+[[ "${MERGE_ONLY:-0}" == "1" ]] && EXTRA+=(--merge-only)
 
 SAMPLE="$(basename "$CONFIG" .yaml)"
 
@@ -40,6 +41,14 @@ else
 fi
 export SCRATCH
 mkdir -p "$SCRATCH"
-echo "SCRATCH=$SCRATCH host=$(hostname) job=${SLURM_JOB_ID:-none} config=$CONFIG"
 
-exec "$ROOT/scripts/run_pipeline.sh" --config "$CONFIG" --scratch "$SCRATCH" "${EXTRA[@]}"
+# Snapshot the driver script so mid-run NFS edits cannot corrupt bash's file offset.
+PIPELINE_COPY="$SCRATCH/run_pipeline.sh"
+cp -a "$ROOT/scripts/run_pipeline.sh" "$PIPELINE_COPY"
+chmod +x "$PIPELINE_COPY"
+export SIMPLELEAF_ROOT="$ROOT"
+
+echo "SCRATCH=$SCRATCH host=$(hostname) job=${SLURM_JOB_ID:-none} config=$CONFIG"
+echo "pipeline_copy=$PIPELINE_COPY"
+
+exec "$PIPELINE_COPY" --config "$CONFIG" --scratch "$SCRATCH" "${EXTRA[@]}"
