@@ -118,15 +118,33 @@ if [[ "$SKIP_QUANT" -eq 0 ]]; then
   mkdir -p "$SCRATCH/stage/gex_index"
   cp -a "$GEX_INDEX"/. "$SCRATCH/stage/gex_index/"
 
-  # Single FASTQ: stable scratch symlink. Comma-separated lists: pass through to simpleaf.
+  # Stage FASTQs as scratch symlinks. Always symlink each file so paths with
+  # commas (e.g. "Lee, Youjin") are not misparsed as multi-FASTQ lists by piscem.
   stage_reads() {
     local src="$1" name="$2"
-    if [[ "$src" == *,* ]]; then
-      echo "$src"
-      return
+    local -a parts=()
+    local -a staged=()
+    local i=0 p link
+    IFS=',' read -r -a parts <<< "$src"
+    # If a single path contains commas (directory name), parts length >1 but
+    # intermediate pieces won't exist as files — detect and treat as one path.
+    if [[ ${#parts[@]} -gt 1 ]]; then
+      local all_exist=1
+      for p in "${parts[@]}"; do
+        [[ -e "$p" ]] || { all_exist=0; break; }
+      done
+      if [[ "$all_exist" -eq 0 ]]; then
+        parts=("$src")
+      fi
     fi
-    ln -sfn "$src" "$SCRATCH/stage/fastq/${name}.fastq.gz"
-    echo "$SCRATCH/stage/fastq/${name}.fastq.gz"
+    for p in "${parts[@]}"; do
+      link="$SCRATCH/stage/fastq/${name}_${i}.fastq.gz"
+      ln -sfn "$p" "$link"
+      staged+=("$link")
+      i=$((i + 1))
+    done
+    local IFS=','
+    echo "${staged[*]}"
   }
   GEX_R1_ARG="$(stage_reads "$GEX_R1" gex_R1)"
   GEX_R2_ARG="$(stage_reads "$GEX_R2" gex_R2)"
@@ -171,7 +189,16 @@ if [[ "$SKIP_QUANT" -eq 0 ]]; then
 
     run_gex & PID_GEX=$!
     run_adt & PID_ADT=$!
-    wait $PID_GEX && wait $PID_ADT
+    RC_GEX=0
+    RC_ADT=0
+    wait $PID_GEX || RC_GEX=$?
+    wait $PID_ADT || RC_ADT=$?
+    if [[ "$RC_GEX" -ne 0 || "$RC_ADT" -ne 0 ]]; then
+      echo "quant failed gex_rc=$RC_GEX adt_rc=$RC_ADT" >&2
+      tail -50 "$OUTDIR/logs/quant_gex.log" >&2 || true
+      tail -50 "$OUTDIR/logs/quant_adt.log" >&2 || true
+      exit 1
+    fi
     rm -rf "$OUTDIR/gex_quant" "$OUTDIR/adt_quant"
     cp -a "$SCRATCH/gex_quant" "$OUTDIR/gex_quant"
     cp -a "$SCRATCH/adt_quant" "$OUTDIR/adt_quant"

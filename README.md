@@ -29,12 +29,15 @@ Demux existing quants only:
 scripts/run_pipeline.sh --config configs/examples/E28S_ocm.yaml --skip-quant
 ```
 
-## Batch: organized_experiments (SMP)
+## Batch: organized_experiments
 
-Generate configs and submit one job per GEX library (64 cores, 400G, `smp-smp-n`):
+Generate configs and submit one job per GEX library (64 cores, 400G):
 
 ```bash
 python3 scripts/generate_organized_configs.py
+# Prefer HTC (SMP may hit AssocGrpBillingMinutes):
+scripts/submit_organized_htc.sh
+# Or SMP when allocation allows:
 scripts/submit_organized_smp.sh
 ```
 
@@ -49,9 +52,10 @@ OCM demux is enabled for E27 and E28S.
 |------|------|
 | `simpleleaf/` | Python package (`demux`, `merge`, `compare`, …) |
 | `scripts/run_pipeline.sh` | Quant ± OCM / merge driver |
-| `scripts/sbatch_pipeline.sh` | Slurm wrapper (SMP cluster) |
+| `scripts/sbatch_pipeline.sh` | Slurm wrapper (cluster set by submit script) |
 | `scripts/generate_organized_configs.py` | Build YAMLs for organized_experiments |
-| `scripts/submit_organized_smp.sh` | Submit all organized configs |
+| `scripts/submit_organized_htc.sh` | Submit all organized configs on HTC |
+| `scripts/submit_organized_smp.sh` | Submit all organized configs on SMP |
 | `configs/template.yaml` | Blank sample config |
 | `configs/examples/` | E28S (OCM) + E14S (CITE) examples |
 | `configs/organized/` | Per-library configs for organized_experiments |
