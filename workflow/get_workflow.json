@@ -1,0 +1,7 @@
+{
+  "name": "10x-gemx-gex-adt-ocm",
+  "version": "0.1.0",
+  "description": "GEM-X 3' v4 GEX + ADT quantification with Cell Ranger-compatible OCM demultiplexing (overhang at barcode positions 7-8).",
+  "template": "10x-gemx-gex-adt-ocm.jsonnet",
+  "docs": "https://simpleaf.readthedocs.io/en/latest/workflow-run.html"
+}
