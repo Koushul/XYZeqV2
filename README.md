@@ -1,3 +1,53 @@
-# XYZeqV2
+# XYZeqV2 — simpleleaf
 
-simpleleaf 
+Reusable **simpleaf** + **OCM** workflows for GEM-X / XYZeq GEX(+ADT) datasets.
+
+Generalizes the sample-specific scripts under `af_tutorial` into a config-driven CLI and pipeline.
+
+## Install / env
+
+```bash
+export PATH=/ix1/ylee/kor11/tools/af_tutorial/conda_env/bin:$PATH
+export LD_LIBRARY_PATH=/ix1/ylee/kor11/tools/af_tutorial/conda_env/lib:$LD_LIBRARY_PATH
+export PYTHONNOUSERSITE=1
+export PYTHONPATH=/ix1/ylee/kor11/tools/XYZeqV2:$PYTHONPATH
+```
+
+Requires: `simpleaf`, `scanpy`, `pandas`, `scipy`, `numpy` (provided by the af_tutorial conda env).
+
+## New sample
+
+```bash
+cp configs/template.yaml configs/MySample.yaml
+# edit paths, chemistry, ocm.sample_map
+scripts/run_pipeline.sh --config configs/MySample.yaml
+```
+
+Demux existing quants only:
+
+```bash
+scripts/run_pipeline.sh --config configs/examples/E28S_ocm.yaml --skip-quant
+```
+
+## Layout
+
+| Path | Role |
+|------|------|
+| `simpleleaf/` | Python package (`demux`, `merge`, `compare`, …) |
+| `scripts/run_pipeline.sh` | Quant ± OCM / merge driver |
+| `configs/template.yaml` | Blank sample config |
+| `configs/examples/` | E28S (OCM) + E14S (CITE) examples |
+| `workflow/` | simpleaf jsonnet template |
+| `.cursor/skills/simpleleaf/SKILL.md` | Agent skill |
+
+## OCM
+
+Cell Ranger OCM (SC3Pv4-*-OCM) splits on barcode positions **7–8**:
+
+`GT→OB1`, `CA→OB2`, `TC→OB3`, `AG→OB4`
+
+Map those IDs to your biological sample names in `ocm.sample_map`.
+
+## License
+
+See `LICENSE`.
